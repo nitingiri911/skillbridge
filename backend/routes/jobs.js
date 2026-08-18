@@ -31,6 +31,26 @@ router.post('/', authenticate, requireRole('recruiter'), async (req, res) => {
   }
 });
 
+// GET /api/jobs/mine - recruiter's own posted jobs with application counts
+router.get('/mine', authenticate, requireRole('recruiter'), async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT j.*, COUNT(a.id) AS application_count
+       FROM jobs j
+       JOIN companies c ON c.id = j.company_id
+       LEFT JOIN applications a ON a.job_id = j.id
+       WHERE c.user_id = $1
+       GROUP BY j.id
+       ORDER BY j.created_at DESC`,
+      [req.user.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch your jobs' });
+  }
+});
+
 // GET /api/jobs - list all jobs, matched + sorted for the logged-in student
 router.get('/', authenticate, requireRole('student'), async (req, res) => {
   try {
