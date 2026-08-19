@@ -28,6 +28,21 @@ export const api = {
   getMyProfile: () => request('/students/me'),
   updateMyProfile: (payload) => request('/students/me', { method: 'PUT', body: JSON.stringify(payload) }),
 
+  uploadResume: async (file) => {
+  const token = localStorage.getItem('sb_token');
+  const formData = new FormData();
+  formData.append('resume', file);
+  const res = await fetch(`${API_BASE}/resume/upload`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Upload failed');
+  return data;
+},
+  getResumeUrl: (key) => request(`/resume/${encodeURIComponent(key)}/url`),
+
   getJobs: () => request('/jobs'),
   getMyJobs: () => request('/jobs/mine'),
   postJob: (payload) => request('/jobs', { method: 'POST', body: JSON.stringify(payload) }),

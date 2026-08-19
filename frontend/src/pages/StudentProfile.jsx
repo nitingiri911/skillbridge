@@ -13,6 +13,9 @@ export default function StudentProfile() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+  const [resumeUrl, setResumeUrl] = useState('');
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [resumeError, setResumeError] = useState('');
 
   useEffect(() => {
     loadProfile();
@@ -27,12 +30,32 @@ export default function StudentProfile() {
       setCollege(data.college || '');
       setBranch(data.branch || '');
       setGraduationYear(data.graduation_year || '');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+setResumeUrl(data.resume_url || '');
+} catch (err) {
+  setError(err.message);
+} finally {
+  setLoading(false);
+}
+}
+
+async function handleResumeUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.type !== 'application/pdf') {
+    setResumeError('Please upload a PDF file.');
+    return;
   }
+  setResumeError('');
+  setUploadingResume(true);
+  try {
+    const data = await api.uploadResume(file);
+    setResumeUrl(data.key);
+  } catch (err) {
+    setResumeError(err.message);
+  } finally {
+    setUploadingResume(false);
+  }
+}
 
   async function handleSave(e) {
     e.preventDefault();
@@ -125,6 +148,25 @@ export default function StudentProfile() {
                 onChange={(e) => setBranch(e.target.value)}
                 className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber"
               />
+            </div>
+
+                        <div>
+              <label className="block text-sm font-medium text-ink mb-1">Resume (PDF)</label>
+              {resumeUrl && (
+                <p className="text-xs text-teal-700 mb-2">✓ Resume uploaded</p>
+              )}
+              {resumeError && (
+                <p className="text-xs text-red-600 mb-2">{resumeError}</p>
+              )}
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={handleResumeUpload}
+                disabled={uploadingResume}
+                className="w-full text-sm text-slate-650 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-ink file:text-white file:text-sm file:font-medium hover:file:bg-slate-800 file:cursor-pointer"
+              />
+              {uploadingResume && <p className="text-xs text-slate-650 mt-1">Uploading...</p>}
+              <p className="text-xs text-slate-650 mt-1">Max 5MB, PDF only.</p>
             </div>
             <button
               type="submit"
