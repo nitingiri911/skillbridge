@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const studentRoutes = require('./routes/students');
 const jobRoutes = require('./routes/jobs');
 const applicationRoutes = require('./routes/applications');
+const resumeRoutes = require('./routes/resume');
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/resume', resumeRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
